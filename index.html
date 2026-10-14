@@ -1,0 +1,119 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Actionably Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:16px;font:15px system-ui,sans-serif;background:#14122b;color:#eee}
+h1{font:700 24px Fraunces,Georgia,serif;margin:0 0 12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+select,input,button,textarea{font:inherit;border-radius:10px;border:1px solid #3a3763;background:#1f1c40;color:#eee;padding:9px 11px}
+button{background:#8881fb;color:#14122b;font-weight:700;border:0;cursor:pointer}button.g{background:#2a2750;color:#eee}
+.card{background:#1b1938;border-radius:16px;padding:14px;margin-bottom:18px}
+.row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
+.sl{flex:none}.sl canvas{width:200px;border-radius:8px;display:block}.sl div{display:flex;gap:6px;margin-top:6px}
+.sl button{padding:6px 9px;font-size:13px}
+textarea{width:100%;box-sizing:border-box;min-height:70px;margin:4px 0 10px}
+label{font-size:12px;color:#aaa;display:block}small{color:#9c98c8}
+</style></head><body>
+<h1>Actionably Maker</h1>
+<div class="bar"><select id="pl"><option value="both">TikTok + Instagram</option><option value="tt">TikTok</option><option value="ig">Instagram</option></select>
+<select id="fa"><option value="all">All focus areas</option><option value="0">Learning</option><option value="1">Fitness</option><option value="2">Habits and discipline</option><option value="3">Career</option><option value="4">Money / business</option><option value="5">Relationships</option></select><select id="tp"></select><select id="cv"><option value="r">Cover: auto</option><option value="0">Statement</option><option value="1">Question</option><option value="2">Saved-post</option></select><select id="ln"><option value="r">Length: auto</option><option value="6">Long (6)</option><option value="4">Short (4)</option></select><button id="go">New post</button></div>
+<small>Every claim shows its source on the slide. Check the sources before you post.</small>
+<div id="out" style="margin-top:14px"></div>
+<script>
+const A=['Learning','Fitness','Habits and discipline','Career','Money / business','Relationships'],AT=['learning','fitness','consistency','growth','moneytips','healthyrelationships'],AC=['Learn','Train','Mindset','Mindset','Learn','Try'];
+const AP=['Saving a post about learning feels like studying. It is not.','Saving a workout feels like training. It is not.','Saving a habit tip feels like a habit. It is not.','Saving career advice feels like progress. It is not.','Saving a money tip feels like a plan. It is not.','Saving a relationship tip feels like showing up. It is not.'];
+const CL=[['Saved a post about {k}?',"Turn it into this week's plan."],['A save is just an idea.','Give it a day this week.'],["Don't just save it.",'Do it this week.']],EV=['post','carousel','thread'];
+const D=[[
+"Re-reading is ((not)) studying|Does re-reading actually work?|Self-testing beat re-reading after a week;Pulling ideas from memory makes them stick|Roediger & Karpicke, 2006|Close the post;Write 3 ideas from memory;Check what you missed|2,6,4|re-reading|Study methods",
+"Cramming ((loses)) to spacing|Cram or spread it out?|Spreading study over time boosted long-term recall;This held across hundreds of experiments|Cepeda et al., 2006|Pick one idea;Review it tomorrow;Review it again in a week|3,3,3|spaced study|Study schedule",
+"Make it ==yours==, don't just read it|Why do you forget what you read?|Generating answers beat just reading them;Effort while learning helps memory|Slamecka & Graf, 1978|Cover the answer;Say it in your words;Compare with the post|2,3,3|active recall|Learning tips",
+"Mix it up to learn ((faster))|Is practicing one skill at a time a mistake?|Mixed practice beat blocked practice on a later test;Mixing makes you choose the right method|Rohrer & Taylor, 2007|Pick two related skills;Alternate them in one session;Test yourself at the end|2,15,5|mixed practice|Practice drills",
+"Learning styles are a ((myth))|Are you really a visual learner?|Matching teaching to a learning style showed no benefit;The method should fit the material, not the person|Pashler et al., 2008|Pick the format that fits the content;Try it once this week;Check what you remember|2,15,3|learning styles|Learning hacks",
+"Mindset can ==lift== grades|Can a mindset shift change results?|A short growth-mindset lesson raised grades for lower-achieving students;The effect was real but modest|Yeager et al., 2019|Name a skill you are building;Write what you do not know yet;Pick one small step|2,3,5|growth mindset|Mindset posts"],[
+"Walk to think ==better==|Need an idea? Take a walk|Walking raised creative output by about 60% on average;It worked on a treadmill indoors too|Oppezzo & Schwartz, 2014|Walk 15 minutes;Bring one question;Write ideas down after|15,2,5|walking|Walking tips",
+"How many steps ((really)) matter|Do you need 10,000 steps?|More steps meant lower risk of death;Gains leveled off around 6,000 to 10,000 steps, by age|Paluch et al., 2022|Check your usual steps;Add 1,000 a day;Hold it for a week|2,5,2|daily steps|Step goals",
+"Lift ((twice)) a week|Is lifting worth the time?|Muscle-strengthening was linked to lower risk of early death;Gains peaked around 30 to 60 minutes a week|Momma et al., 2022|Pick 3 exercises;Do them twice this week;Log what you lifted|3,30,2|strength training|Workout",
+"Short bursts ==count==|No time? Try 1 minute|Brief bouts of vigorous daily activity linked to lower risk of death;Even 1 to 2 minutes a few times a day|Stamatakis et al., 2022|Pick a vigorous move;Do it for one minute;Repeat 3 times today|2,1,3|short workouts|Quick workouts",
+"Sleep is a ((performance)) tool|Is sleep part of training?|Basketball players who extended sleep ran faster and shot better;More rest improved mood and alertness|Mah et al., 2011|Pick a fixed bedtime;Set a wind-down alarm;Track how you feel|2,2,3|sleep|Sleep routine",
+"Exercise grows your ((memory))|Can exercise change your brain?|A year of aerobic exercise grew a memory region in older adults;It also improved spatial memory|Erickson et al., 2011|Pick a walking route;Walk 3 times this week;Note your focus after|3,30,3|aerobic exercise|Cardio plan"],[
+"It takes ((66 days)), not 21|Quitting at day 21?|The average time to automatic was 66 days;It ranged from 18 to 254 days|Lally et al., 2009|Keep it small;Tie it to a daily cue;If you miss a day, restart|3,2,2|habit timelines|Habit tracker",
+"==If-then== beats willpower|Why do plans fail?|If-then plans had a medium-to-large effect on goals;This came from 94 separate studies|Gollwitzer & Sheeran, 2006|Pick one action;Choose a day and time;Write: If it is Tue 7pm, I will|3,2,5|if-then plans|Planning tips",
+"Pair it with something you ((love))|Struggling to start?|Gym visits rose when audiobooks were saved for the gym;Pairing a want with a should helped follow-through|Milkman et al., 2014|Pick a treat you enjoy;Allow it only during the habit;Try it 3 times|3,2,3|temptation bundling|Habit hacks",
+"Habits live in your ((setting))|Why do habits break on vacation?|About 43% of daily actions were done almost daily in the same place;Context cues drive repeated behavior|Wood et al., 2002|Choose a fixed spot;Place the cue there;Do it at the same time|2,2,3|habit cues|Habit stacks",
+"Track it to ==keep== it|Does tracking help?|Monitoring progress improved goal attainment;This held across 138 studies|Harkin et al., 2016|Pick one habit;Mark it every day;Review each Sunday|2,1,5|progress tracking|Habit tracker",
+"Mondays ((reset)) motivation|Is a fresh start real?|People start goals more after dates like Mondays or new months;Gym visits and goal pledges rose after them|Dai et al., 2014|Pick your fresh-start day;Pick one goal;Write the first action|2,3,3|fresh starts|Reset routine"],[
+"Vague goals ((don't)) get done|Is your goal too vague?|Specific, hard goals beat do-your-best goals;About 35 years of research agrees|Locke & Latham, 2002|Name the exact action;Add a number;Pick a day|5,3,2|specific goals|Goal setting",
+"Progress is the ==fuel==|What actually motivates you?|Progress on meaningful work lifted mood most;This came from nearly 12,000 diary entries|Amabile & Kramer, 2011|Finish one small thing;Mark it done;Review what you finished|10,1,2|small wins|Work motivation",
+"Missed a week? ((Reset))|Fell off track?|Self-compassion raised motivation after failure;Harsh self-criticism did not help|Breines & Chen, 2012|Name what got in the way;Shrink the next step;Restart today|5,3,2|bouncing back|Getting back on track",
+"You ((underestimate)) every task|Why is everything late?|People underestimate their own task times;Even when similar tasks ran over before|Buehler et al., 1994|Time one task;Add a buffer;Compare with your estimate|3,2,5|time estimates|Time planning",
+"Reps ((aren't)) enough|Why plateau at work?|Experts built skill through focused practice with feedback;Hours alone were not enough|Ericsson et al., 1993|Choose one skill;Do one focused rep;Get feedback, adjust|5,20,10|deliberate practice|Skill building",
+"Unfinished goals ==haunt== you|Why can't you switch off?|Unfinished goals intrude on your thoughts;Making a specific plan reduced that|Masicampo & Baumeister, 2011|Pick one open loop;Turn it into one action;Give it a day|2,5,2|open loops|Productivity tips"],[
+"Save ((more)) tomorrow|Why don't we save?|Workers who committed future raises to savings saved far more;Small automatic steps beat willpower|Thaler & Benartzi, 2004|Pick an amount;Automate it for next payday;Raise it with each raise|5,10,3|automatic saving|Saving tips",
+"Lock it in with a ==commitment==|Can you trust future you?|A commitment savings account raised savings in a field study;Restricting access helped people follow through|Ashraf et al., 2006|Choose a goal amount;Pick a locked account;Set a date|3,10,2|commitment saving|Money habits",
+"Buy back your ((time))|Does money buy happiness?|Spending to save time raised life satisfaction;It worked across several countries|Whillans et al., 2017|Pick a chore to outsource;Price it;Use the time on a goal|3,5,3|buying time|Money tips",
+"Spend on ((experiences))|What is worth spending on?|Experiences brought more happiness than things;The effect appeared across several studies|Van Boven & Gilovich, 2003|List 3 experiences;Pick one;Book it|3,2,5|experience spending|Spending tips",
+"Write the business plan ==down==|Do plans help small businesses?|Planning had a small positive link to firm performance;The link held across dozens of studies|Brinckmann et al., 2010|Write one page;List the next 3 actions;Review monthly|10,5,5|business planning|Business planning",
+"Knowing isn't ((doing))|Does money education work?|Financial education explained very little of later behavior;Effects faded over time|Fernandes et al., 2014|Pick one money action;Do it this week;Repeat monthly|3,10,2|financial action|Money lessons"],[
+"Write the ((thank-you)) letter|Want a happiness boost?|A gratitude visit lifted happiness for about a month;It was among the strongest exercises tested|Seligman et al., 2005|Pick one person;Write 5 sentences;Send or read it|2,10,3|gratitude|Gratitude ideas",
+"People value your thanks ((more))|Is a thank-you note awkward?|Writers underestimated how much recipients valued gratitude letters;Recipients felt more positive than writers expected|Kumar & Epley, 2018|Pick someone;Write 3 sentences;Send it today|2,5,1|thank-you notes|Gratitude notes",
+"Reach out ==first==|Should you text them?|People underestimated how much a reach-out is appreciated;Recipients valued it more than senders expected|Liu et al., 2023|Pick someone you miss;Send a short message;Plan a call|2,2,3|reaching out|Friendship tips",
+"Friends help you ((live longer))|Do relationships matter?|Stronger social ties linked to about 50% higher survival;This came from 148 studies|Holt-Lunstad et al., 2010|List 3 close people;Schedule one meetup;Repeat monthly|3,3,2|social ties|Connection tips",
+"They like you ((more)) than you think|Do people like talking to you?|People underestimated how much partners liked them;The gap lasted for months|Boothby et al., 2018|Start one chat;Note what they said;Follow up|2,5,3|liking gap|Conversation tips",
+"Spend on ==others==|What lifts your mood fast?|Spending on others made people happier than spending on self;Even small amounts counted|Dunn et al., 2008|Pick a small gift;Give it this week;Note how it felt|3,10,2|giving|Giving ideas"]];
+const T=[];D.forEach((a,ai)=>a.forEach(x=>{const[h,q,f,s,st,m,k,ex]=x.split('|');T.push({a:ai,c:A[ai],h,q,f:f.split(';'),s,st:st.split(';'),m:m.split(',').map(Number),k,ex,p:AP[ai],v:T.length%4===3?'progress':'plan',t:[AT[ai],k.replace(/\W/g,'')]})}));
+const F={tt:{n:'TikTok',w:1080,h:1920,t:230,b:460},ig:{n:'Instagram',w:1080,h:1350,t:120,b:150}};
+const FONT=(b,s)=>`${b?700:400} ${s}px Fraunces,Georgia,serif`,$=i=>document.getElementById(i),P='#4b3fe0';
+const strip=s=>s.replace(/\*\*|==|__|\(\(|\)\)/g,'');
+const G='Simple flat editorial illustration, off-white background, one subject, bold black outlines, one purple accent (#8881fb), lots of empty space, no text, square 1:1. Subject: ';
+function rt(x,str,y,s,o={}){const W=1080,parts=str.split(/(\*\*.+?\*\*|==.+?==|__.+?__|\(\(.+?\)\))/).filter(Boolean),ws=[];
+parts.forEach(p=>{let st={};if(p.startsWith('**'))st={b:1};else if(p.startsWith('=='))st={h:1};else if(p.startsWith('__'))st={u:1};else if(p.startsWith('(('))st={c:1,b:1};
+(st.b||st.h||st.u||st.c?p.slice(2,-2):p).split(' ').filter(Boolean).forEach(w=>ws.push({w,...st}))});
+const mw=o.mw||840,lh=s*(o.lh||1.3),L=[];let cur=[],cw=0;
+ws.forEach(w=>{x.font=FONT(w.b||o.b,s);w.wd=x.measureText(w.w+' ').width;if(cw+w.wd>mw&&cur.length){L.push(cur);cur=[];cw=0}cur.push(w);cw+=w.wd});if(cur.length)L.push(cur);
+x.textAlign='left';L.forEach(l=>{let px=(W-l.reduce((a,w)=>a+w.wd,0))/2;l.forEach(w=>{x.font=FONT(w.b||o.b,s);const vis=w.wd-x.measureText(' ').width;
+if(w.h){x.fillStyle='#f8e94c';x.fillRect(px-6,y-s*.82,w.wd+4,s*1.1)}
+x.fillStyle=o.col||'#111';x.fillText(w.w,px,y);if(w.u)x.fillRect(px,y+s*.1,vis,Math.max(3,s*.05));
+if(w.c){x.strokeStyle='#e0352b';x.lineWidth=Math.max(4,s*.06);x.beginPath();x.ellipse(px+vis/2,y-s*.3,vis/2+s*.3,s*.62,-.04,0,7);x.stroke()}
+px+=w.wd});y+=lh});return y}
+function rr(x,a,b,w,h,r,f,s){x.beginPath();x.roundRect(a,b,w,h,r);if(f){x.fillStyle=f;x.fill()}if(s){x.strokeStyle=s;x.lineWidth=2;x.stroke()}}
+function logo(x,cx,y,s,col,bg){const w=s*.8,l=cx-w/2;x.fillStyle=col;x.beginPath();x.moveTo(l,y);x.lineTo(l+w,y);x.lineTo(l+w,y+s);x.lineTo(l+w/2,y+s*.8);x.lineTo(l,y+s);x.closePath();x.fill();
+x.fillStyle=bg;x.beginPath();x.arc(l+w*.95,y+s*.22,s*.3,0,7);x.fill();x.strokeStyle=col;x.lineWidth=s*.07;x.lineCap='round';x.lineJoin='round';x.beginPath();x.moveTo(l+w*.8,y+s*.22);x.lineTo(l+w*.93,y+s*.33);x.lineTo(l+w*1.15,y+s*.1);x.stroke()}
+function phone(x,cx,y,h,t){x.save();x.translate(cx-h/4,y);x.scale(h/600,h/600);rr(x,0,0,300,600,40,'#0b0a1c');rr(x,10,10,280,580,32,'#14122b');
+const tx=(s,a,b,z,bd,c)=>{x.font=`${bd?700:400} ${z}px system-ui,sans-serif`;x.fillStyle=c||'#eeeaff';x.textAlign='left';x.fillText(s,a,b)};
+const cd=(b,h2)=>rr(x,24,b,252,h2,14,'#201e42','#34316a'),pl=(s,a,b,w,f)=>{rr(x,a,b,w,28,14,f?'#8881fb':null,f?null:'#34316a');tx(s,a+12,b+19,12,1,f?'#14122b':'#eeeaff')};
+const wr=(s,a,b,z,w)=>{const ws=s.split(' ');let l='';x.font=`700 ${z}px system-ui,sans-serif`;ws.forEach(q=>{if(x.measureText(l+q).width>w&&l){tx(l,a,b,z,1);b+=z+4;l=''}l+=q+' '});tx(l,a,b,z,1)};
+if(t.v==='progress'){tx('Progress',24,62,22,1);pl('Overview',24,78,80,1);pl('Completed Actions (3)',110,78,160);tx('3 of 4',24,170,34,1);tx('actions done this week',24,194,14,0,'#9c98c8');rr(x,24,208,252,10,5,'#2f2c5c');rr(x,24,208,189,10,5,'#3dd6a0');
+[0,1].forEach(i=>{const b=240+i*110;cd(b,96);tx('Done',38,b+26,12,1,'#3dd6a0');wr(t.st[i],38,b+50,14,220);tx('From save: '+t.ex,38,b+84,11,0,'#9c98c8')})}
+else{tx('This week',24,62,22,1);tx('From save: '+t.ex,24,84,12,0,'#9c98c8');t.st.forEach((s,i)=>{const b=104+i*148;cd(b,132);tx(['MON','WED','FRI'][i],38,b+26,12,1,'#8881fb');tx(t.m[i]+' min',226,b+26,12,0,'#9c98c8');wr(s,38,b+54,15,220);pl('I did it',38,b+94,92,1)})}
+x.restore()}
+function draw(c,f,t,k,im,lk){const x=c.getContext('2d'),W=1080,H=f.h,m=(f.t+H-f.b)/2,tl=f.h>1500;c.width=W;c.height=H;x.fillStyle='#fdfaf5';x.fillRect(0,0,W,H);
+const f1=(s,y,z,o)=>rt(x,s,y,z,o);
+if(k==='cover'){const cz=strip(t.h).length>42?92:112,y=f1(t.h,m-170,cz,{b:1,lh:1.12});f1(t.c.toUpperCase()+'  ·  swipe',y+50,34,{col:'#888'})}
+if(k==='find'){let y=f1('What the research says',m-(tl?400:330),70,{b:1});y+=40;t.f.forEach(b=>{y=f1(b,y+30,46,{lh:1.25})+20});x.font=FONT(0,28);x.fillStyle='#888';x.textAlign='center';x.fillText(t.s.length>52?t.s.slice(0,52)+'...':t.s,W/2,Math.min(y+20,H-f.b-30))}
+if(k==='gfx'){const ph=tl?640:430,fy=f.t+10;rr(x,120,fy,840,ph,28,'#e6e3dc');if(im){const r=Math.min(800/im.width,(ph-40)/im.height);x.drawImage(im,W/2-im.width*r/2,fy+ph/2-im.height*r/2,im.width*r,im.height*r)}else{x.font=FONT(0,30);x.fillStyle='#999';x.textAlign='center';x.fillText('Add your image here',W/2,fy+ph/2)}
+let y=f1('The catch',fy+ph+90,66,{b:1});f1(t.p,y+20,44)}
+if(k==='steps'){let y=f1('Turn it into 3 actions',m-(tl?330:260),76,{b:1});y+=20;t.st.forEach((s,i)=>{y=f1(`==${i+1}==  ${s} · ${t.m[i]} min`,y+40,50)+10});f1('Saved a post on this? Actionably builds these for you.',y+50,36,{col:'#666'})}
+if(k==='app'){let y=f1('A save becomes a plan',f.t+20,66,{b:1});const ph=H-f.b-y-150;phone(x,W/2,y+10,ph,t);f1('Upload the post. Get actions like these, spread across your week.',H-f.b-50,30,{col:'#555',lh:1.2,mw:900})}
+if(k==='cta'){let y=f1(t.cl[0].replace('{k}',t.k),m-(tl?380:330),84,{b:1,lh:1.15});y=f1('=='+t.cl[1]+'==',y+10,56);['Screenshot the post','Upload it','Get actions across your week'].forEach((s,i)=>{y=f1(`**${i+1}**  ${s}`,y+36,46)});logo(x,W/2,y+60,100,P,'#fdfaf5');f1('**Actionably**',y+230,56);f1('Link in bio',y+300,38,{col:'#666'})}
+if(k!=='cta'){x.font=FONT(1,28);const tw=x.measureText('Actionably · Saved → Done').width;logo(x,W/2-tw/2-26,H-f.b+8,34,P,'#fdfaf5');x.fillStyle='#444';x.textAlign='left';x.fillText('Actionably · Saved → Done',W/2-tw/2+6,H-f.b+36)}}
+const K0=['cover','find','gfx','steps','app','cta'];let last=-1;
+const tags=t=>t.t.map(a=>'#'+a).concat(['#productivity','#selfimprovement','#actionably']).slice(0,5).join(' ');
+function caps(t,id){const L='Link in bio.';return id==='tt'?{cap:`Upload one saved post today. ${strip(t.h)}. Actionably turns your saves into actions across your week. ${L} ${tags(t)}`,pin:`Which saved post are you finally doing this week? ${L}`}:
+{cap:`Upload one saved post today.\n\n${strip(t.h)}\n\n${t.f[0]} (${t.s.split(';')[0]}).\n\nActionably turns your saves into actions spread across your week: screenshot, upload, done. ${L}\n\nSave this for your next planning session.\n\n${tags(t)}`,pin:''}}
+function make(){const pl=$('pl').value,fm=pl==='both'?['tt','ig']:[pl],R=n=>Math.floor(Math.random()*n),fa=$('fa').value,pool=T.map((t,i)=>i).filter(i=>fa==='all'||T[i].a==fa);
+const i=$('tp').value==='r'?pool[R(pool.length)]:+$('tp').value,b=T[i],cv=$('cv').value==='r'?R(3):+$('cv').value,ln=$('ln').value==='r'?(R(2)?6:4):+$('ln').value;
+const t=Object.assign({},b,{h:[b.h,b.q,`Saved a post on ==${b.k}==?`][cv],ex:b.ex+' '+EV[R(3)],cl:CL[R(3)]}),KS=ln===4?['cover','steps','app','cta']:['cover','find','gfx','steps','app','cta'],lk='';
+const out=$('out');out.innerHTML='';let im=null;const all=[],rd=()=>all.forEach(a=>draw(a.c,a.f,t,a.k,im,lk)),dlf=(c,n)=>c.toBlob(bl=>{const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=n;a.click()});
+fm.forEach(id=>{const f=F[id],cc=caps(t,id),d=document.createElement('div');d.className='card';d.innerHTML=`<b>${f.n}</b> <small>${f.w}x${f.h}, ${KS.length} slides</small><div class="row"></div>`;const row=d.querySelector('.row');
+KS.forEach((k,n)=>{const c=document.createElement('canvas'),s=document.createElement('div');s.className='sl';s.append(c);const bx=document.createElement('div'),dl=document.createElement('button');dl.className='g';dl.textContent='Download';dl.onclick=()=>dlf(c,`actionably-${id}-${n+1}.png`);bx.append(dl);
+if(k==='gfx'){const u=document.createElement('input');u.type='file';u.accept='image/*';u.hidden=true;u.onchange=()=>{const r=new Image;r.onload=()=>{im=r;rd()};r.src=URL.createObjectURL(u.files[0])};const ub=document.createElement('button');ub.className='g';ub.textContent='Add image';ub.onclick=()=>u.click();bx.append(ub,u)}
+s.append(bx);row.append(s);all.push({c,f,k})});
+const a1=document.createElement('button');a1.textContent='Download all';a1.onclick=()=>[...row.querySelectorAll('canvas')].forEach((c,n)=>setTimeout(()=>dlf(c,`actionably-${id}-${n+1}.png`),n*350));
+d.append(a1);d.insertAdjacentHTML('beforeend',`<label>Caption</label><textarea>${cc.cap}</textarea>${cc.pin?`<label>Pinned comment</label><textarea>${cc.pin}</textarea>`:''}`);out.append(d)});
+const pc=document.createElement('div');pc.className='card';pc.innerHTML=`<label>Image prompt for ChatGPT (long posts, slide 3)</label><textarea>${G}a simple scene about ${t.k}</textarea><small>Source: ${t.s} · <a style="color:#8881fb" target="_blank" href="https://scholar.google.com/scholar?q=${encodeURIComponent(t.s+' '+t.k)}">Verify this study</a></small>`;out.append(pc);
+const js=JSON.stringify({title:strip(t.h),cat:AC[t.a],sum:t.f[0],src:'actionably-maker',parts:t.st.map((a,n)=>({act:a,min:t.m[n]}))},null,1),jc=document.createElement('div');jc.className='card';jc.innerHTML=`<label>What Actionably builds from this post (${AC[t.a]}, ${t.m.reduce((a,b)=>a+b,0)} min total)</label><small>${t.st.map((a,n)=>`${n+1}. ${a} (${t.m[n]} min)`).join('<br>')}</small><label style="margin-top:10px">Save format (for testing or importing)</label><textarea>${js}</textarea>`;out.append(jc);
+document.fonts.load('700 40px Fraunces').then(()=>document.fonts.load('400 40px Fraunces')).catch(()=>{}).then(rd)}
+function fill(){const fa=$('fa').value;$('tp').innerHTML='<option value="r">Surprise me</option>'+T.map((t,i)=>fa==='all'||t.a==fa?`<option value="${i}">${strip(t.h)}</option>`:'').join('')}
+$('fa').onchange=fill;fill();
+
+$('go').onclick=make;make();
+</script></body></html>
