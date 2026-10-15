@@ -97,7 +97,7 @@ const T=[];POOL.rs=T;D.forEach((a,ai)=>a.forEach(x=>{const[h,q,f,s,st,m,k,ex]=x.
 const F={tt:{n:'TikTok',w:1080,h:1920,t:230,b:460},ig:{n:'Instagram',w:1080,h:1350,t:120,b:150}};
 const FONT=(b,s)=>`${b?700:400} ${s}px Fraunces,Georgia,serif`,$=i=>document.getElementById(i),P='#4b3fe0';
 const strip=s=>s.replace(/\*\*|==|__|\(\(|\)\)/g,'');
-const G='Simple flat editorial illustration, off-white background, one subject, bold black outlines, one purple accent (#8881fb), lots of empty space, no text, square 1:1. Subject: ';
+const G='Simple flat editorial illustration, flat cream background in the exact color #fdfaf5 (no border, no shadow), one subject, bold black outlines, one purple accent (#8881fb), lots of empty space, no text, square 1:1. Subject: ';
 function rt(x,str,y,s,o={}){const W=1080,parts=str.split(/(\*\*.+?\*\*|==.+?==|__.+?__|\(\(.+?\)\))/).filter(Boolean),ws=[];
 parts.forEach(p=>{let st={};if(p.startsWith('**'))st={b:1};else if(p.startsWith('=='))st={h:1};else if(p.startsWith('__'))st={u:1};else if(p.startsWith('(('))st={c:1,b:1};
 (st.b||st.h||st.u||st.c?p.slice(2,-2):p).split(' ').filter(Boolean).forEach(w=>ws.push({w,...st}))});
@@ -123,7 +123,7 @@ function draw(c,f,t,k,im,lk){let sp=[k];if(Array.isArray(k)){sp=k;k=k[0]}const x
 const f1=(s,y,z,o)=>rt(x,s,y,z,o);
 if(k==='cover'){const cz=strip(t.h).length>42?92:112,y=f1(t.h,m-170,cz,{b:1,lh:1.12});f1(t.c.toUpperCase()+'  ·  swipe',y+50,34,{col:'#888'})}
 if(k==='find'){let y=f1('What the research says',m-(tl?400:330),70,{b:1});y+=40;t.f.forEach(b=>{y=f1(b,y+30,46,{lh:1.25})+20});x.font=FONT(0,28);x.fillStyle='#888';x.textAlign='center';x.fillText(t.s.length>52?t.s.slice(0,52)+'...':t.s,W/2,Math.min(y+20,H-f.b-30))}
-if(k==='gfx'){const ph=tl?640:430,fy=f.t+10;rr(x,120,fy,840,ph,28,'#e6e3dc');if(im){const r=Math.min(800/im.width,(ph-40)/im.height);x.drawImage(im,W/2-im.width*r/2,fy+ph/2-im.height*r/2,im.width*r,im.height*r)}else{x.font=FONT(0,30);x.fillStyle='#999';x.textAlign='center';x.fillText('Add your image here',W/2,fy+ph/2)}
+if(k==='gfx'){const ph=tl?640:430,fy=f.t+10;if(im){const r=Math.min(800/im.width,(ph-40)/im.height),iw=im.width*r,ih=im.height*r,ix=W/2-iw/2,iy=fy+ph/2-ih/2;x.save();x.beginPath();x.roundRect(ix,iy,iw,ih,28);x.clip();x.drawImage(im,ix,iy,iw,ih);x.restore()}else{rr(x,120,fy,840,ph,28,'#e6e3dc');x.font=FONT(0,30);x.fillStyle='#999';x.textAlign='center';x.fillText('Add your image here',W/2,fy+ph/2)}
 const a0=t.st[0].charAt(0).toLowerCase()+t.st[0].slice(1);let y=f1("Knowing isn't doing",fy+ph+90,66,{b:1});y=f1(`Saving a post about ${t.k} feels like progress. It isn't, yet.`,y+10,42,{lh:1.25});f1(`Actionably turns it into a dated action: ==${a0}== on Monday.`,y+20,42,{lh:1.3})}
 if(k==='steps'){let y=f1('Turn it into 3 actions',m-(tl?330:260),76,{b:1});y+=20;t.st.forEach((s,i)=>{y=f1(`==${i+1}==  ${s} · ${t.m[i]} min`,y+40,50)+10});f1('Saved a post on this? Actionably builds these for you.',y+50,36,{col:'#666'})}
 if(k==='app'){let y=f1('A save becomes a plan',f.t+20,66,{b:1});const ph=H-f.b-y-150;phone(x,W/2,y+10,ph,t);f1('Upload the post. Get actions like these, spread across your week.',H-f.b-50,30,{col:'#555',lh:1.2,mw:900})}
